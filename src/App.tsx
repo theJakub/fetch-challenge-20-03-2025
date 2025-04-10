@@ -18,7 +18,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { isAuthenticated } = useAuth();
-  console.log('isAuthenticated:', isAuthenticated);
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
@@ -31,7 +31,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     <Navigate to={isAuthenticated ? '/' : '/login'} />;
-  }, []);
+  }, [isAuthenticated]);
 
   return (
     <QueryClientProvider client={queryClient}>

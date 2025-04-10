@@ -1,19 +1,19 @@
 export interface Dog {
+  age: number;
+  breed: string;
   id: string;
   img: string;
   name: string;
-  age: number;
   zip_code: string;
-  breed: string;
 }
 
 export interface Location {
-  zip_code: string;
+  city: string;
+  county: string;
   latitude: number;
   longitude: number;
-  city: string;
   state: string;
-  county: string;
+  zip_code: string;
 }
 
 export interface Coordinates {
@@ -22,10 +22,10 @@ export interface Coordinates {
 }
 
 export interface SearchResult {
-  resultIds: string[];
-  total: number;
   next?: string;
   prev?: string;
+  resultIds: string[];
+  total: number;
 }
 
 export interface Match {
@@ -33,18 +33,18 @@ export interface Match {
 }
 
 export interface User {
-  name: string;
   email: string;
+  name: string;
 }
 
 export interface DogFilters {
-  breeds?: string[];
-  zipCodes?: string[];
-  ageMin?: number;
   ageMax?: number;
-  size?: number;
+  ageMin?: number;
+  breeds?: string[];
   from?: number;
+  size?: number;
   sort?: string;
+  zipCodes?: string[];
 }
 
 export interface LocationSearchParams {

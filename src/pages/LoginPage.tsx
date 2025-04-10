@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'motion/react';
 
-const AnimatedPaper = motion(Paper);
+const AnimatedPaper = motion.create(Paper);
 
 const validateEmail = (email: string) => {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

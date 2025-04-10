@@ -91,8 +91,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(false);
 
     return () => {
-      // console.log('Unmounting AuthProvider');
-      // localStorage.removeItem('user');
       setUser(null);
     };
   }, []);

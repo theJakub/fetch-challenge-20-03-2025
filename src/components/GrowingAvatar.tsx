@@ -3,7 +3,7 @@ import { Avatar, Box } from '@mui/material';
 import { motion } from 'motion/react';
 import { Dog } from '../types';
 
-const AnimatedAvatar = motion(Avatar);
+const AnimatedAvatar = motion.create(Avatar);
 
 const GrowingAvatar = ({ dog }: { dog: Dog }) => {
   return (

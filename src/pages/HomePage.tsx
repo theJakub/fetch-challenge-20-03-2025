@@ -10,7 +10,6 @@ import {
   TextField,
   TablePagination,
   TableSortLabel,
-  Typography,
   Box,
   FormControl,
   Select,
@@ -21,10 +20,10 @@ import { useDogsContext } from '../context/DogsContext';
 import GrowingAvatar from '../components/GrowingAvatar';
 
 const HomePage: React.FC = () => {
-  const { dogs, searchResult } = useDogsContext();
+  const { dogs, handleChangePage, page, total } = useDogsContext();
+
   const [searchTerm, setSearchTerm] = useState('');
-  const [page, setPage] = useState(0);
-  const [orderBy, setOrderBy] = useState<keyof Dog>('name');
+  const [orderBy, setOrderBy] = useState<keyof Dog>('breed');
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
 
   const handleSort = (property: keyof Dog) => {
@@ -33,16 +32,8 @@ const HomePage: React.FC = () => {
     setOrderBy(property);
   };
 
-  const handleChangePage = (_event: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-
   return (
     <Paper style={{ padding: '20px' }}>
-      <Typography component="h1" variant="h5">
-        Pups
-      </Typography>
-
       <Box display="flex" style={{ marginBottom: '20px' }}>
         <FormControl
           variant="outlined"
@@ -125,7 +116,7 @@ const HomePage: React.FC = () => {
         </Table>
         <TablePagination
           component="div"
-          count={searchResult?.total || 0}
+          count={total || 0}
           onPageChange={handleChangePage}
           page={page}
           rowsPerPage={15}

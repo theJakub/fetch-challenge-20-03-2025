@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchWithAuth } from './api';
-import { Dog, DogFilters, SearchResult } from '../types';
+import { useMemo } from 'react';
 
 export const useBreeds = () => {
   return useQuery({
@@ -12,52 +12,54 @@ export const useBreeds = () => {
   });
 };
 
-export const useSearchDogs = (filters: DogFilters, enabled = true) => {
-  return useQuery({
-    queryKey: ['dogs', 'search', filters],
-    queryFn: async () => {
-      // Convert filters to query string
-      const queryParams = new URLSearchParams();
-      
-      if (filters.breeds && filters.breeds.length > 0) {
-        filters.breeds.forEach(breed => queryParams.append('breeds', breed));
-      }
-      
-      if (filters.ageMin !== undefined) {
-        queryParams.append('ageMin', filters.ageMin.toString());
-      }
-      
-      if (filters.ageMax !== undefined) {
-        queryParams.append('ageMax', filters.ageMax.toString());
-      }
-      
-      // Fixed size at 15
-      queryParams.append('size', '15');
-      
-      if (filters.from !== undefined) {
-        queryParams.append('from', filters.from.toString());
-      }
-      
-      if (filters.sort) {
-        queryParams.append('sort', filters.sort);
-      }
-      
-      return await fetchWithAuth(`/dogs/search?${queryParams.toString()}`) as SearchResult;
-    },
-    enabled,
-  });
+const fetchSearchResults = async (url: string) => {
+  const res = await fetchWithAuth(url);
+  return res;
 };
 
-export const useDogs = (dogIds: string[], enabled = true) => {
-  return useQuery({
-    queryKey: ['dogs', dogIds],
-    queryFn: async () => {
-      if (!dogIds.length) return [];
-      return await fetchWithAuth('/dogs', {
-        method: 'POST',
-        body: JSON.stringify(dogIds),
-      }) as Dog[];
-    },
-    enabled: enabled && dogIds.length > 0,
+const fetchDogsByIds = async (ids: string[]) => {
+  const res = await fetchWithAuth('/dogs', {
+    method: 'POST',
+    body: JSON.stringify(ids),
+    headers: { 'Content-Type': 'application/json' },
   });
+  return res;
 };
+
+export function useDogSearch(currentUrl: string | null) {
+  const {
+    data: searchData,
+    error: searchError,
+    isError: isSearchError,
+    isLoading: isSearchLoading,
+  } = useQuery({
+    queryKey: ['dogSearch', currentUrl],
+    queryFn: async () => fetchSearchResults(currentUrl!),
+    enabled: !!currentUrl,
+  });
+
+  const {
+    data: dogData,
+    error: dogError,
+    isError: isDogError,
+    isLoading: isDogsLoading,
+  } = useQuery({
+    queryKey: ['dogs', searchData?.resultIds],
+    queryFn: async () => fetchDogsByIds(searchData.resultIds),
+    enabled: !!searchData?.resultIds?.length,
+  });
+
+  const error = useMemo(() => searchError || dogError, [searchError, dogError]);
+  const isError = useMemo(() => isSearchError || isDogError, [isSearchError, isDogError]);
+  const isLoading = useMemo(() => isSearchLoading || isDogsLoading, [isSearchLoading, isDogsLoading]);
+
+  return {
+    dogs: dogData ?? [],
+    error,
+    isError,
+    isLoading,
+    nextPageUrl: searchData?.next ?? null,
+    prevPageUrl: searchData?.prev ?? null,
+    total: searchData?.total ?? 0,
+  };
+}
