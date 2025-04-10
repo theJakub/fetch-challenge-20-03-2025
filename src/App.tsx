@@ -14,7 +14,6 @@ import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import { DogsProvider } from './context/DogsContext';
 
-// Protected route component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -17,19 +17,16 @@ import {
   MenuItem,
 } from '@mui/material';
 import { Dog } from '../types';
+import { useDogsContext } from '../context/DogsContext';
+import GrowingAvatar from '../components/GrowingAvatar';
 
 const HomePage: React.FC = () => {
-  const [dogs] = useState<Dog[]>([]);
+  const { dogs, searchResult } = useDogsContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [orderBy, setOrderBy] = useState<keyof Dog>('name');
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
 
-  useEffect(() => {
-    const sessionCookie = document.cookie.split('; ');
-    console.log('Cookies', sessionCookie);
-  }, []);
   const handleSort = (property: keyof Dog) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -40,34 +37,8 @@ const HomePage: React.FC = () => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const filteredDogs = dogs
-    .filter(
-      (dog) =>
-        dog.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        dog.breed.toLowerCase().includes(searchTerm.toLowerCase()),
-    )
-    .sort((a, b) => {
-      if (order === 'asc') {
-        return a[orderBy] < b[orderBy] ? -1 : 1;
-      } else {
-        return b[orderBy] < a[orderBy] ? -1 : 1;
-      }
-    });
-
-  const paginatedDogs = filteredDogs.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage,
-  );
-
   return (
-    <div style={{ padding: '20px' }}>
+    <Paper style={{ padding: '20px' }}>
       <Typography component="h1" variant="h5">
         Pups
       </Typography>
@@ -80,11 +51,11 @@ const HomePage: React.FC = () => {
           }}
         >
           <Select value="all" defaultValue="all">
-            <MenuItem value="all">All</MenuItem>
-            <MenuItem value="breeds">Breeds</MenuItem>
-            <MenuItem value="zipCodes">Zip Codes</MenuItem>
-            <MenuItem value="ageMin">Minimum Age</MenuItem>
-            <MenuItem value="ageMax">Maximum Age</MenuItem>
+            <MenuItem value="all">Search all</MenuItem>
+            <MenuItem value="breeds">Search breeds</MenuItem>
+            <MenuItem value="zipCodes">Search zip Codes</MenuItem>
+            <MenuItem value="ageMin">Search minimum Age</MenuItem>
+            <MenuItem value="ageMax">Search maximum Age</MenuItem>
           </Select>
         </FormControl>
         <TextField
@@ -99,6 +70,7 @@ const HomePage: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell />
               <TableCell>
                 <TableSortLabel
                   active={orderBy === 'name'}
@@ -126,29 +98,41 @@ const HomePage: React.FC = () => {
                   Age
                 </TableSortLabel>
               </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === 'zip_code'}
+                  direction={orderBy === 'zip_code' ? order : 'asc'}
+                  onClick={() => handleSort('zip_code')}
+                >
+                  Zip Code
+                </TableSortLabel>
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedDogs.map((dog, index) => (
+            {dogs?.map((dog, index) => (
               <TableRow key={index}>
+                <TableCell>
+                  <GrowingAvatar dog={dog} />
+                </TableCell>
                 <TableCell>{dog.name}</TableCell>
                 <TableCell>{dog.breed}</TableCell>
                 <TableCell>{dog.age}</TableCell>
+                <TableCell>{dog.zip_code}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={filteredDogs.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
+          count={searchResult?.total || 0}
           onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
+          page={page}
+          rowsPerPage={15}
+          rowsPerPageOptions={[15]}
         />
       </TableContainer>
-    </div>
+    </Paper>
   );
 };
 

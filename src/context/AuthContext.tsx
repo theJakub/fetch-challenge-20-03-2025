@@ -39,15 +39,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      navigate('/home', { replace: true });
-    }
-    setIsLoading(false);
-  }, []);
-
   const handleLogin = useCallback(
     async (userData: User) => {
       try {
@@ -90,6 +81,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }),
     [user, isLoading, loginPending, logoutPending, handleLogin, handleLogout],
   );
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+      navigate('/home', { replace: true });
+    }
+    setIsLoading(false);
+
+    return () => {
+      // console.log('Unmounting AuthProvider');
+      // localStorage.removeItem('user');
+      setUser(null);
+    };
+  }, []);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
