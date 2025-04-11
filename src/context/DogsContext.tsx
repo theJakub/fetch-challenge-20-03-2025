@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 
 interface DogsContextType {
   breeds: string[];
+  clearFilters: () => void;
   dogs: Dog[];
   error: Error | null;
   filters: DogFilters;
@@ -32,15 +33,17 @@ interface DogsProviderProps {
   children: ReactNode;
 }
 
-export const DogsProvider: React.FC<DogsProviderProps> = ({ children }) => {
+const defaultFilters: DogFilters = {
+  ageMax: undefined,
+  ageMin: undefined,
+  breeds: [],
+  from: 0,
+  sort: 'breed:asc',
+};
+
+export const DogsProvider = ({ children }: DogsProviderProps) => {
   const [page, setPage] = useState(0);
-  const [filters, setFiltersState] = useState<DogFilters>({
-    ageMax: undefined,
-    ageMin: undefined,
-    breeds: [],
-    from: 0,
-    sort: 'breed:asc',
-  });
+  const [filters, setFiltersState] = useState<DogFilters>(defaultFilters);
   const [currentPageUrl, setCurrentPageUrl] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -72,8 +75,12 @@ export const DogsProvider: React.FC<DogsProviderProps> = ({ children }) => {
     [dogsQuery.nextPageUrl, dogsQuery.prevPageUrl, page],
   );
 
-  const setFilters = useCallback((newFilters: DogFilters) => {
+  const setFilters = useCallback((newFilters: Partial<DogFilters>) => {
     setFiltersState((prev) => ({ ...prev, ...newFilters }));
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    setFiltersState(defaultFilters);
   }, []);
 
   useEffect(() => {
@@ -114,6 +121,7 @@ export const DogsProvider: React.FC<DogsProviderProps> = ({ children }) => {
   const value = useMemo(
     () => ({
       breeds: breedsQuery.data || [],
+      clearFilters,
       dogs: dogsQuery.dogs || [],
       error,
       filters,
@@ -128,6 +136,7 @@ export const DogsProvider: React.FC<DogsProviderProps> = ({ children }) => {
     }),
     [
       breedsQuery.data,
+      clearFilters,
       dogsQuery.dogs,
       dogsQuery.total,
       error,
