@@ -2,13 +2,15 @@ import React from 'react';
 import { Button } from '@mui/material';
 
 const PassiveButton = ({
-  onClick,
-  disabled,
   children,
+  disabled,
+  onClick,
+  highlight = false,
 }: {
-  onClick: () => void;
-  disabled?: boolean;
   children: React.ReactNode;
+  disabled?: boolean;
+  onClick: () => void;
+  highlight?: boolean;
 }) => {
   return (
     <Button
@@ -17,10 +19,8 @@ const PassiveButton = ({
       size="small"
       variant="text"
       sx={{
-        color: 'rgba(0, 0, 0, 0.6)',
-        '&:hover': {
-          backgroundColor: 'rgba(0, 0, 0, 0.04)',
-        },
+        color: highlight ? '' : 'rgba(0, 0, 0, 0.6)',
+        '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' },
       }}
     >
       {children}

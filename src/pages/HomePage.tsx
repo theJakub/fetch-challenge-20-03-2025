@@ -1,23 +1,10 @@
-import React from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  TablePagination,
-  TableSortLabel,
-  Box,
-} from '@mui/material';
+import React, { useCallback, useState } from 'react';
+import { Box, Paper } from '@mui/material';
 import { useDogsContext } from '../context/DogsContext';
-import GrowingAvatar from '../components/GrowingAvatar';
-import SkeletonRow from '../components/SkeletonRow';
-import { AnimatePresence } from 'motion/react';
-import AnimatedTableRow from '../components/AnimatedTableRow';
-import MultiSelect from '../components/MultiSelect';
-import DogRow from '../components/DogRow';
+import TableIdea from '../components/TableIdea';
+import { GridView, List } from '@mui/icons-material';
+import PassiveButton from '../components/PassiveButton';
+import TilesIdea from '../components/TilesIdea';
 
 const HomePage = () => {
   const {
@@ -31,15 +18,20 @@ const HomePage = () => {
     total,
   } = useDogsContext();
 
-  const handleSort = () => {
+  const [displayTable, setDisplayTable] = useState<boolean>(false);
+
+  const handleSort = useCallback(() => {
     setFilters({
       sort: filters.sort?.includes('asc') ? 'breed:desc' : 'breed:asc',
     });
-  };
+  }, [filters.sort, setFilters]);
 
-  const handleBreedFilter = (breeds: string[]) => {
-    setFilters({ breeds });
-  };
+  const handleBreedFilter = useCallback(
+    (breeds: string[]) => {
+      setFilters({ breeds });
+    },
+    [setFilters],
+  );
 
   return (
     <Paper
@@ -50,53 +42,49 @@ const HomePage = () => {
         padding: '20px',
       }}
     >
-      <Box display="flex" justifyContent={'space-between'}>
-        <MultiSelect
-          options={breeds}
-          defaultSelectedOptions={filters.breeds}
-          onBlur={handleBreedFilter}
-        />
+      <Box display={'flex'} justifyContent={'flex-end'} gap={'8px'}>
+        <PassiveButton
+          highlight={displayTable}
+          onClick={() => setDisplayTable(true)}
+        >
+          <List />
+        </PassiveButton>
+        <PassiveButton
+          highlight={!displayTable}
+          onClick={() => setDisplayTable(false)}
+        >
+          <GridView />
+        </PassiveButton>
       </Box>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell />
-              <TableCell>Name</TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active
-                  direction={filters.sort?.includes('asc') ? 'asc' : 'desc'}
-                  onClick={() => handleSort()}
-                >
-                  Breed
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>Age</TableCell>
-              <TableCell>Zip Code</TableCell>
-            </TableRow>
-          </TableHead>
-          <AnimatePresence>
-            <TableBody>
-              {isLoading
-                ? Array.from({ length: 15 }).map((_, index) => (
-                    <SkeletonRow delay={index} key={index} />
-                  ))
-                : dogs?.map((dog, index) => (
-                    <DogRow key={dog.id} dog={dog} index={index} />
-                  ))}
-            </TableBody>
-          </AnimatePresence>
-        </Table>
-        <TablePagination
-          component="div"
-          count={total || 0}
-          onPageChange={handleChangePage}
-          page={page}
-          rowsPerPage={15}
-          rowsPerPageOptions={[15]}
+      {displayTable ? (
+        <TableIdea
+          {...{
+            breeds,
+            dogs,
+            filters,
+            handleBreedFilter,
+            handleChangePage,
+            handleSort,
+            isLoading,
+            page,
+            total,
+          }}
         />
-      </TableContainer>
+      ) : (
+        <TilesIdea
+          {...{
+            breeds,
+            dogs,
+            filters,
+            handleBreedFilter,
+            handleChangePage,
+            handleSort,
+            isLoading,
+            page,
+            total,
+          }}
+        />
+      )}
     </Paper>
   );
 };
