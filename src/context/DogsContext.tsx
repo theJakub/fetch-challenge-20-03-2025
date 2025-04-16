@@ -8,8 +8,15 @@ import React, {
   useEffect,
 } from 'react';
 import { Dog, DogFilters } from '../types';
-import { useBreeds, useDogSearch } from '../queries/dogs';
+import {
+  fetchDogsByIds,
+  fetchSearchResults,
+  useBreeds,
+  useDogSearch,
+} from '../queries/dogs';
 import { useNavigate } from 'react-router-dom';
+import { queryClient } from '../queries/queryClient';
+import { useGetZips } from '../queries/location';
 
 interface DogsContextType {
   breeds: string[];
@@ -18,12 +25,14 @@ interface DogsContextType {
   error: Error | null;
   filters: DogFilters;
   handleChangePage: (event: unknown, newPage: number) => void;
+  handleSetCity: (locationCity: string) => void;
+  handleSetState: (locationState: string) => void;
   isError: boolean;
-  isLoading: boolean;
+  isPending: boolean;
+  locationCity: string;
+  locationState: string;
   page: number;
-  searchTerm: string;
   setFilters: (filters: DogFilters) => void;
-  setSearchTerm: (term: string) => void;
   total: number;
 }
 
@@ -37,19 +46,21 @@ const defaultFilters: DogFilters = {
   ageMax: undefined,
   ageMin: undefined,
   breeds: [],
-  from: 0,
   sort: 'breed:asc',
+  zipCodes: [],
 };
 
 export const DogsProvider = ({ children }: DogsProviderProps) => {
   const [page, setPage] = useState(0);
   const [filters, setFiltersState] = useState<DogFilters>(defaultFilters);
   const [currentPageUrl, setCurrentPageUrl] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [locationCity, setLocationCity] = useState('');
+  const [locationState, setLocationState] = useState('');
 
   const navigate = useNavigate();
   const breedsQuery = useBreeds();
-  const dogsQuery = useDogSearch(currentPageUrl);
+  const zipsQuery = useGetZips(locationCity, locationState);
+  const dogsQuery = useDogSearch(currentPageUrl, !zipsQuery.isLoading);
 
   const error = useMemo(() => {
     return dogsQuery.error || breedsQuery.error;
@@ -59,9 +70,9 @@ export const DogsProvider = ({ children }: DogsProviderProps) => {
     return dogsQuery.isError || breedsQuery.isError;
   }, [dogsQuery.isError, breedsQuery.isError]);
 
-  const isLoading = useMemo(() => {
-    return dogsQuery.isLoading || breedsQuery.isLoading;
-  }, [dogsQuery.isLoading, breedsQuery.isLoading]);
+  const isPending = useMemo(() => {
+    return dogsQuery.isPending || breedsQuery.isPending;
+  }, [dogsQuery.isPending, breedsQuery.isPending]);
 
   const handleChangePage = useCallback(
     (_event: unknown, newPage: number) => {
@@ -83,11 +94,25 @@ export const DogsProvider = ({ children }: DogsProviderProps) => {
     setFiltersState(defaultFilters);
   }, []);
 
+  const handleSetCity = useCallback((newCity: string) => {
+    setLocationCity(newCity);
+  }, []);
+
+  const handleSetState = useCallback((newState: string) => {
+    setLocationState(newState);
+  }, []);
+
   useEffect(() => {
     const queryParams = new URLSearchParams();
 
     if (filters.breeds && filters.breeds.length > 0) {
       filters.breeds.forEach((breed) => queryParams.append('breeds', breed));
+    }
+
+    if (locationCity && locationState && zipsQuery?.data?.length) {
+      zipsQuery.data.forEach((zip: string) =>
+        queryParams.append('zipCodes', zip),
+      );
     }
 
     if (filters.ageMin !== undefined) {
@@ -98,18 +123,39 @@ export const DogsProvider = ({ children }: DogsProviderProps) => {
       queryParams.append('ageMax', filters.ageMax.toString());
     }
 
+    // always start at 0 for first request. response will have next 'from' set
+    queryParams.append('from', '0');
     queryParams.append('size', '15');
-
-    if (filters.from !== undefined) {
-      queryParams.append('from', filters.from.toString());
-    }
 
     if (filters.sort) {
       queryParams.append('sort', filters.sort);
     }
 
     setCurrentPageUrl(`/dogs/search?${queryParams}`);
-  }, [filters]);
+  }, [filters, locationCity, locationState, zipsQuery.data]);
+
+  useEffect(() => {
+    if (dogsQuery.nextPageUrl) {
+      queryClient.prefetchQuery({
+        queryKey: ['dogSearch', dogsQuery.nextPageUrl],
+        queryFn: async () => {
+          const searchData = await fetchSearchResults(dogsQuery.nextPageUrl);
+
+          if (searchData?.resultIds?.length) {
+            queryClient.prefetchQuery({
+              queryKey: ['dogs', searchData.resultIds],
+              queryFn: async () => {
+                const dogData = await fetchDogsByIds(searchData.resultIds);
+                return dogData;
+              },
+            });
+          }
+
+          return searchData;
+        },
+      });
+    }
+  }, [dogsQuery.nextPageUrl]);
 
   useEffect(() => {
     if (isError) {
@@ -126,12 +172,14 @@ export const DogsProvider = ({ children }: DogsProviderProps) => {
       error,
       filters,
       handleChangePage,
+      handleSetCity,
+      handleSetState,
       isError,
-      isLoading,
+      isPending,
+      locationCity,
+      locationState,
       page,
-      searchTerm,
       setFilters,
-      setSearchTerm,
       total: dogsQuery.total,
     }),
     [
@@ -142,10 +190,13 @@ export const DogsProvider = ({ children }: DogsProviderProps) => {
       error,
       filters,
       handleChangePage,
+      handleSetCity,
+      handleSetState,
       isError,
-      isLoading,
+      isPending,
+      locationCity,
+      locationState,
       page,
-      searchTerm,
       setFilters,
     ],
   );

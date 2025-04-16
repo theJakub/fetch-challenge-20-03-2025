@@ -1,10 +1,17 @@
 import React from 'react';
 import { Dog } from '../types';
 import { Box, Card, CardContent, CardMedia, Typography } from '@mui/material';
+import { motion } from 'motion/react';
+
+const AnimatedBox = motion.create(Box);
 
 const DogTile = ({ dog }: { dog: Dog }) => {
   return (
-    <Box
+    <AnimatedBox
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      initial={{ opacity: 0, y: 20 }}
+      transition={{ duration: 0.2 }}
       sx={{
         width: {
           xs: 'calc(50% - 16px)',
@@ -43,7 +50,7 @@ const DogTile = ({ dog }: { dog: Dog }) => {
           </Typography>
         </CardContent>
       </Card>
-    </Box>
+    </AnimatedBox>
   );
 };
 

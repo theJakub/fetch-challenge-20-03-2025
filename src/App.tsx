@@ -10,7 +10,7 @@ import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import { queryClient } from './queries/queryClient';
-import Layout from './components/Layout';
+import Layout from './components/common/Layout';
 import HomePage from './pages/HomePage';
 import { DogsProvider } from './context/DogsContext';
 

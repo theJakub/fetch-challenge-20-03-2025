@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Autocomplete, Checkbox, TextField, FormControl } from '@mui/material';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
@@ -8,35 +8,34 @@ const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
 const MultiSelect = ({
   options,
-  defaultSelectedOptions = [],
-  onBlur,
+  selectedOptions = [],
+  onChange,
+  label,
+  placeholder,
 }: {
   options: string[];
-  defaultSelectedOptions?: string[];
-  onBlur: (selectedOptions: string[]) => void;
+  selectedOptions: string[];
+  onChange: (selectedOptions: string[]) => void;
+  label: string;
+  placeholder: string;
 }) => {
-  const [selectedBreeds, setSelectedBreeds] = useState(defaultSelectedOptions);
-
   return (
-    <FormControl sx={{ width: '100%' }}>
+    <FormControl sx={{ width: '300px' }}>
       <Autocomplete
         multiple
-        id="breed-select"
         options={options}
         disableCloseOnSelect
-        value={selectedBreeds}
+        value={selectedOptions}
         onChange={(_, newValue) => {
-          setSelectedBreeds(newValue);
+          onChange(newValue);
         }}
-        onBlur={() => onBlur(selectedBreeds)}
         renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Filter by breed"
-            placeholder={selectedBreeds ? '' : 'Breeds'}
-          />
+          <TextField {...params} label={label} placeholder={placeholder} />
         )}
-        renderValue={(value) => value?.join(', ')}
+        // renderValue={(value) => {
+        //   console.log(value);
+        //   return value.length > 0 ? `${value.length} Breeds` : '';
+        // }}
         renderOption={(props, option, { selected }) => (
           <li {...props}>
             <Checkbox

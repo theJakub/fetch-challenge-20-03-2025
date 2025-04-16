@@ -12,12 +12,12 @@ export const useBreeds = () => {
   });
 };
 
-const fetchSearchResults = async (url: string) => {
+export const fetchSearchResults = async (url: string) => {
   const res = await fetchWithAuth(url);
   return res;
 };
 
-const fetchDogsByIds = async (ids: string[]) => {
+export const fetchDogsByIds = async (ids: string[]) => {
   const res = await fetchWithAuth('/dogs', {
     method: 'POST',
     body: JSON.stringify(ids),
@@ -26,38 +26,38 @@ const fetchDogsByIds = async (ids: string[]) => {
   return res;
 };
 
-export function useDogSearch(currentUrl: string | null) {
+export function useDogSearch(currentUrl: string | null, isEnabled: boolean) {
   const {
     data: searchData,
     error: searchError,
     isError: isSearchError,
-    isLoading: isSearchLoading,
+    isPending: isSearchPending,
   } = useQuery({
     queryKey: ['dogSearch', currentUrl],
     queryFn: async () => fetchSearchResults(currentUrl!),
-    enabled: !!currentUrl,
+    enabled: isEnabled && !!currentUrl,
   });
 
   const {
     data: dogData,
     error: dogError,
     isError: isDogError,
-    isLoading: isDogsLoading,
+    isPending: isDogsPending,
   } = useQuery({
     queryKey: ['dogs', searchData?.resultIds],
     queryFn: async () => fetchDogsByIds(searchData.resultIds),
-    enabled: !!searchData?.resultIds?.length,
+    enabled: isEnabled && !!searchData?.resultIds?.length,
   });
 
   const error = useMemo(() => searchError || dogError, [searchError, dogError]);
   const isError = useMemo(() => isSearchError || isDogError, [isSearchError, isDogError]);
-  const isLoading = useMemo(() => isSearchLoading || isDogsLoading, [isSearchLoading, isDogsLoading]);
+  const isPending = useMemo(() => isSearchPending || isDogsPending, [isSearchPending, isDogsPending]);
 
   return {
     dogs: dogData ?? [],
     error,
     isError,
-    isLoading,
+    isPending,
     nextPageUrl: searchData?.next ?? null,
     prevPageUrl: searchData?.prev ?? null,
     total: searchData?.total ?? 0,
