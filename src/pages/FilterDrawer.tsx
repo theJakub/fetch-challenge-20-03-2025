@@ -16,6 +16,7 @@ import { useDogsContext } from '../context/DogsContext';
 import { LocationOn } from '@mui/icons-material';
 import { states } from '../constants/states';
 import PassiveButton from '../components/common/PassiveButton';
+import { useNavigate } from 'react-router-dom';
 
 const FilterDrawer = ({
   isOpen,
@@ -24,6 +25,7 @@ const FilterDrawer = ({
   isOpen: boolean;
   onClose: () => void;
 }) => {
+  const navigate = useNavigate();
   const {
     breeds,
     clearFilters,
@@ -70,18 +72,31 @@ const FilterDrawer = ({
 
   const handleClear = useCallback(() => {
     clearFilters();
+    navigate('/search');
     onClose();
-  }, [clearFilters, onClose]);
+  }, [clearFilters, navigate, onClose]);
 
   const handleAccept = useCallback(() => {
     handleSetCity(localCity);
     handleSetState(localState);
     setFilters({
       ...filters,
+      page: 0,
       ageMax: ageState[1],
       ageMin: ageState[0],
       breeds: breedsState,
     });
+    const searchParamsString = encodeURIComponent(
+      JSON.stringify({
+        ...filters,
+        ageMax: ageState[1],
+        ageMin: ageState[0],
+        breeds: breedsState,
+        city: localCity,
+        state: localState,
+      }),
+    );
+    navigate(`/search/${searchParamsString}`);
     onClose();
   }, [
     ageState,
@@ -91,6 +106,7 @@ const FilterDrawer = ({
     handleSetState,
     localCity,
     localState,
+    navigate,
     onClose,
     setFilters,
   ]);

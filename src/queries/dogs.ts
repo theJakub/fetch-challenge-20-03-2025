@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchWithAuth } from './api';
 import { useMemo } from 'react';
 
@@ -73,9 +73,25 @@ export const fetchMatch = async (dogIds: string[]) => {
 };
 
 export const useMatchDog = () => {
+  const queryClient = useQueryClient();
+  
   return useMutation({
-    mutationFn: async (dogIds: string[]) => {
-      return await fetchMatch(dogIds);
+    mutationFn: async (favoriteIds: string[]) => {
+      return await fetchWithAuth('/dogs/match', {
+        method: 'POST',
+        body: JSON.stringify(favoriteIds),
+      });
     },
+    onSuccess: (data) => {
+      queryClient.setQueryData(['dogMatch'], data.match);
+    },
+  });
+};
+
+export const useMatchDogResult = () => {
+  return useQuery({
+    queryKey: ['dogMatch'],
+    queryFn: () => {},
+    enabled: false
   });
 };

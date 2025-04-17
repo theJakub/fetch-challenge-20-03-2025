@@ -31,6 +31,7 @@ export interface DogFilters {
   ageMax?: number;
   ageMin?: number;
   breeds: string[];
+  page: number;
   sort: SortType;
   zipCodes: string[];
 }

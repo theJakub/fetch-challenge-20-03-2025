@@ -32,10 +32,6 @@ const MultiSelect = ({
         renderInput={(params) => (
           <TextField {...params} label={label} placeholder={placeholder} />
         )}
-        // renderValue={(value) => {
-        //   console.log(value);
-        //   return value.length > 0 ? `${value.length} Breeds` : '';
-        // }}
         renderOption={(props, option, { selected }) => (
           <li {...props}>
             <Checkbox

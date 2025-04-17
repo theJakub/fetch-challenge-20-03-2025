@@ -34,7 +34,6 @@ interface DogsContextType {
   isPending: boolean;
   locationCity: string;
   locationState: string;
-  page: number;
   setFilters: (filters: DogFilters) => void;
   total: number;
 }
@@ -49,12 +48,12 @@ const defaultFilters: DogFilters = {
   ageMax: undefined,
   ageMin: undefined,
   breeds: [],
+  page: 0,
   sort: 'breed:asc',
   zipCodes: [],
 };
 
 export const DogsProvider = ({ children }: DogsProviderProps) => {
-  const [page, setPage] = useState(0);
   const [filters, setFiltersState] = useState<DogFilters>(defaultFilters);
   const [currentPageUrl, setCurrentPageUrl] = useState<string | null>(null);
   const [locationCity, setLocationCity] = useState('');
@@ -78,17 +77,9 @@ export const DogsProvider = ({ children }: DogsProviderProps) => {
     return dogsQuery.isPending || breedsQuery.isPending;
   }, [dogsQuery.isPending, breedsQuery.isPending]);
 
-  const handleChangePage = useCallback(
-    (_event: unknown, newPage: number) => {
-      if (newPage > page && dogsQuery.nextPageUrl) {
-        setCurrentPageUrl(dogsQuery.nextPageUrl);
-      } else if (newPage < page && dogsQuery.prevPageUrl) {
-        setCurrentPageUrl(dogsQuery.prevPageUrl);
-      }
-      setPage(newPage);
-    },
-    [dogsQuery.nextPageUrl, dogsQuery.prevPageUrl, page],
-  );
+  const handleChangePage = useCallback((_event: unknown, newPage: number) => {
+    setFiltersState((prev) => ({ ...prev, page: newPage }));
+  }, []);
 
   const setFilters = useCallback((newFilters: Partial<DogFilters>) => {
     setFiltersState((prev) => ({ ...prev, ...newFilters }));
@@ -121,6 +112,12 @@ export const DogsProvider = ({ children }: DogsProviderProps) => {
   useEffect(() => {
     const queryParams = new URLSearchParams();
 
+    if (filters.page !== undefined) {
+      queryParams.append('from', (filters.page * 15).toString());
+    } else {
+      queryParams.append('from', '0');
+    }
+
     if (filters.breeds && filters.breeds.length > 0) {
       filters.breeds.forEach((breed) => queryParams.append('breeds', breed));
     }
@@ -139,8 +136,6 @@ export const DogsProvider = ({ children }: DogsProviderProps) => {
       queryParams.append('ageMax', filters.ageMax.toString());
     }
 
-    // always start at 0 for first request. response will have next 'from' set
-    queryParams.append('from', '0');
     queryParams.append('size', '15');
 
     if (filters.sort) {
@@ -150,8 +145,14 @@ export const DogsProvider = ({ children }: DogsProviderProps) => {
     setCurrentPageUrl(`/dogs/search?${queryParams}`);
   }, [filters, locationCity, locationState, zipsQuery.data]);
 
+  // The "next" value from the API is not formatted correctly for zipCodes
+  // if a filter set includes zipCodes, skip the prefetch since the 'next' value
+  // will cause a 500 error
   useEffect(() => {
-    if (dogsQuery.nextPageUrl) {
+    if (
+      dogsQuery.nextPageUrl &&
+      !dogsQuery.nextPageUrl.includes('zipCodes%5B')
+    ) {
       queryClient.prefetchQuery({
         queryKey: ['dogSearch', dogsQuery.nextPageUrl],
         queryFn: async () => {
@@ -209,7 +210,6 @@ export const DogsProvider = ({ children }: DogsProviderProps) => {
       isPending,
       locationCity,
       locationState,
-      page,
       setFilters,
       total: dogsQuery.total,
     }),
@@ -230,7 +230,6 @@ export const DogsProvider = ({ children }: DogsProviderProps) => {
       isPending,
       locationCity,
       locationState,
-      page,
       setFilters,
     ],
   );

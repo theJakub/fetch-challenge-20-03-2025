@@ -8,7 +8,7 @@ import PassiveButton from './common/PassiveButton';
 
 const AnimatedBox = motion.create(Box);
 
-const DogTile = ({ dog }: { dog: Dog }) => {
+const DogTile = ({ dog, isMatch = false }: { dog: Dog; isMatch?: boolean }) => {
   const { favoriteDogs, handleAddFavoriteDog, handleRemoveFavoriteDog } =
     useDogsContext();
   const isFavorite = useMemo(
@@ -34,6 +34,20 @@ const DogTile = ({ dog }: { dog: Dog }) => {
         position: 'relative',
       }}
     >
+      {isMatch && (
+        <Star
+          sx={{
+            position: 'absolute',
+            top: '4px',
+            left: '4px',
+            color: '#FFD700',
+            zIndex: 1,
+            height: '32px',
+            width: '32px',
+          }}
+        />
+      )}
+
       {isFavorite && (
         <Star
           sx={{
@@ -72,15 +86,16 @@ const DogTile = ({ dog }: { dog: Dog }) => {
           <Typography variant="body1" color="text.secondary">
             Location: {dog.zip_code}
           </Typography>
-          {isFavorite ? (
-            <PassiveButton onClick={() => handleRemoveFavoriteDog(dog.id)}>
-              Remove from favorites
-            </PassiveButton>
-          ) : (
-            <PassiveButton onClick={() => handleAddFavoriteDog(dog)}>
-              Add to favorites
-            </PassiveButton>
-          )}
+          {!isMatch &&
+            (isFavorite ? (
+              <PassiveButton onClick={() => handleRemoveFavoriteDog(dog.id)}>
+                Remove from favorites
+              </PassiveButton>
+            ) : (
+              <PassiveButton onClick={() => handleAddFavoriteDog(dog)}>
+                Add to favorites
+              </PassiveButton>
+            ))}
         </CardContent>
       </Card>
     </AnimatedBox>

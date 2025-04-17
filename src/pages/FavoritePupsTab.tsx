@@ -5,8 +5,10 @@ import { AnimatePresence } from 'motion/react';
 import DogTile from '../components/DogTile';
 import EmptyState from '../components/common/EmptyState';
 import { useMatchDog } from '../queries/dogs';
+import { useNavigate } from 'react-router-dom';
 
 const FavoritePupsTab = () => {
+  const navigate = useNavigate();
   const { favoriteDogs } = useDogsContext();
   const { mutate } = useMatchDog();
 
@@ -18,20 +20,28 @@ const FavoritePupsTab = () => {
   const handleMatch = () => {
     const favoriteIds = Object.keys(favoriteDogs);
     mutate(favoriteIds);
+    navigate('/match');
   };
 
   return (
-    <Box display={'flex'} flexWrap={'wrap'} gap={'16px'} mr={'-16px'}>
+    <Box>
       <AnimatePresence>
         {favoritesArray.length ? (
-          <Box>
-            {favoritesArray.map((dog) => (
-              <DogTile key={dog.id} dog={dog} />
-            ))}
+          <>
+            <Box
+              display={'flex'}
+              flexWrap={'wrap'}
+              gap={'16px'}
+              sx={{ marginBottom: '16px' }}
+            >
+              {favoritesArray.map((dog) => (
+                <DogTile key={dog.id} dog={dog} />
+              ))}
+            </Box>
             <Button onClick={handleMatch} variant="contained" color="success">
               Find your match!
             </Button>
-          </Box>
+          </>
         ) : (
           <EmptyState label="No favorite pups yet. Search for pups and add some to your favorites!" />
         )}

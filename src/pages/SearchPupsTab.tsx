@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDogsContext } from '../context/DogsContext';
 import { Box, Button, Grid, TablePagination } from '@mui/material';
 import FilterChips from '../components/FilterChips';
@@ -8,13 +8,21 @@ import { AnimatePresence } from 'motion/react';
 import SkeletonTile from '../components/SkeletonTile';
 import DogTile from '../components/DogTile';
 import FilterDrawer from './FilterDrawer';
+import { useParams } from 'react-router-dom';
+import { areFiltersEqual } from '../utils/areFiltersEqual';
 
 const SearchPupsTab = () => {
+  const { filters: filtersParam } = useParams();
   const {
     dogs,
+    filters,
     handleChangePage: changePage,
+    handleSetCity,
+    handleSetState,
+    locationCity,
+    locationState,
     isPending,
-    page,
+    setFilters,
     total,
   } = useDogsContext();
 
@@ -29,6 +37,35 @@ const SearchPupsTab = () => {
     },
     [changePage],
   );
+
+  useEffect(() => {
+    if (filtersParam) {
+      try {
+        const { city, state, ...decodedFilters } = JSON.parse(
+          decodeURIComponent(filtersParam),
+        );
+        if (city !== locationCity) {
+          handleSetCity(city);
+        }
+        if (state !== locationState) {
+          handleSetState(state);
+        }
+        if (areFiltersEqual(decodedFilters, filters)) {
+          setFilters(decodedFilters);
+        }
+      } catch (error) {
+        console.error('Error parsing filters from URL:', error);
+      }
+    }
+  }, [
+    filters,
+    filtersParam,
+    handleSetCity,
+    handleSetState,
+    locationCity,
+    locationState,
+    setFilters,
+  ]);
 
   return (
     <Grid spacing="16px" direction={'column'} container>
@@ -60,7 +97,7 @@ const SearchPupsTab = () => {
         component="div"
         count={total || 0}
         onPageChange={handleChangePage}
-        page={page}
+        page={filters.page}
         rowsPerPage={15}
         rowsPerPageOptions={[15]}
       />
