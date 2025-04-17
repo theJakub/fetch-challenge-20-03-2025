@@ -4,7 +4,6 @@ import {
   Routes,
   Route,
   Navigate,
-  Outlet,
 } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
@@ -29,15 +28,6 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   return <>{children}</>;
 };
 
-// Layout wrapper for all dog-related pages
-const DogLayout = () => {
-  return (
-    <DogsProvider>
-      <Outlet />
-    </DogsProvider>
-  );
-};
-
 const App: React.FC = () => {
   const { isAuthenticated } = useAuth();
 
@@ -53,29 +43,19 @@ const App: React.FC = () => {
             <AuthProvider>
               <Routes>
                 <Route path="/login" element={<LoginPage />} />
+
                 <Route
-                  path="/"
+                  path="/home"
                   element={
                     <ProtectedRoute>
-                      <DogLayout />
+                      <DogsProvider>
+                        <HomePage />
+                      </DogsProvider>
                     </ProtectedRoute>
                   }
-                >
-                  <Route index element={<Navigate to="/search" replace />} />
-                  <Route
-                    path="search/:filters?"
-                    element={<HomePage activeTab="search" />}
-                  />
-                  <Route
-                    path="favorites"
-                    element={<HomePage activeTab="favorites" />}
-                  />
-                  <Route
-                    path="match"
-                    element={<HomePage activeTab="match" />}
-                  />
-                  <Route path="*" element={<Navigate to="/search" replace />} />
-                </Route>
+                />
+
+                <Route path="*" element={<Navigate to="/home" replace />} />
               </Routes>
             </AuthProvider>
           </Router>

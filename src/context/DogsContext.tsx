@@ -141,7 +141,9 @@ export const DogsProvider = ({ children }: DogsProviderProps) => {
     if (filters.sort) {
       queryParams.append('sort', filters.sort);
     }
-
+    console.log(
+      'the filters fucking updated so setting the god damned current paget',
+    );
     setCurrentPageUrl(`/dogs/search?${queryParams}`);
   }, [filters, locationCity, locationState, zipsQuery.data]);
 

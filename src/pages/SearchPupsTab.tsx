@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useDogsContext } from '../context/DogsContext';
 import { Box, Button, Grid, TablePagination } from '@mui/material';
 import FilterChips from '../components/FilterChips';
@@ -8,21 +8,14 @@ import { AnimatePresence } from 'motion/react';
 import SkeletonTile from '../components/SkeletonTile';
 import DogTile from '../components/DogTile';
 import FilterDrawer from './FilterDrawer';
-import { useParams } from 'react-router-dom';
-import { areFiltersEqual } from '../utils/areFiltersEqual';
+import EmptyState from '../components/common/EmptyState';
 
 const SearchPupsTab = () => {
-  const { filters: filtersParam } = useParams();
   const {
     dogs,
     filters,
     handleChangePage: changePage,
-    handleSetCity,
-    handleSetState,
-    locationCity,
-    locationState,
     isPending,
-    setFilters,
     total,
   } = useDogsContext();
 
@@ -31,41 +24,13 @@ const SearchPupsTab = () => {
   const handleChangePage = useCallback(
     (event: unknown, newPage: number) => {
       changePage(event, newPage);
+
       setTimeout(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 0);
     },
     [changePage],
   );
-
-  useEffect(() => {
-    if (filtersParam) {
-      try {
-        const { city, state, ...decodedFilters } = JSON.parse(
-          decodeURIComponent(filtersParam),
-        );
-        if (city !== locationCity) {
-          handleSetCity(city);
-        }
-        if (state !== locationState) {
-          handleSetState(state);
-        }
-        if (areFiltersEqual(decodedFilters, filters)) {
-          setFilters(decodedFilters);
-        }
-      } catch (error) {
-        console.error('Error parsing filters from URL:', error);
-      }
-    }
-  }, [
-    filters,
-    filtersParam,
-    handleSetCity,
-    handleSetState,
-    locationCity,
-    locationState,
-    setFilters,
-  ]);
 
   return (
     <Grid spacing="16px" direction={'column'} container>
@@ -86,12 +51,16 @@ const SearchPupsTab = () => {
       </Box>
       <Box display={'flex'} flexWrap={'wrap'} gap={'16px'} mr={'-16px'}>
         <AnimatePresence>
-          {isPending
-            ? Array.from({ length: 15 }).map((_, index) => (
-                <SkeletonTile key={index} />
-              ))
-            : dogs.map((dog) => <DogTile key={dog.id} dog={dog} />)}
-        </AnimatePresence>
+          {isPending ? (
+            Array.from({ length: 15 }).map((_, index) => (
+              <SkeletonTile key={index} />
+            ))
+          ) : dogs.length > 0 ? (
+            dogs.map((dog) => <DogTile key={dog.id} dog={dog} />)
+          ) : (
+            <EmptyState label="No dogs match your search criteria" />
+          )}
+        </AnimatePresence>{' '}
       </Box>
       <TablePagination
         component="div"

@@ -6,23 +6,17 @@ import { TabContext } from '@mui/lab';
 import SearchPupsTab from './SearchPupsTab';
 import FavoritePupsTab from './FavoritePupsTab';
 import MatchTab from './MatchTab';
-import { useNavigate, useParams } from 'react-router-dom';
 
 export type TabsType = 'search' | 'favorites' | 'match';
 
-const HomePage = ({ activeTab }: { activeTab: TabsType }) => {
-  const navigate = useNavigate();
-  const { filters } = useParams();
+const HomePage = () => {
+  const [tabValue, setTabValue] = React.useState<TabsType>('search');
 
   const handleChangeTab = useCallback(
     (_event: React.SyntheticEvent, newValue: TabsType) => {
-      if (newValue === 'search') {
-        navigate(filters ? `/search/${filters}` : '/search');
-      } else {
-        navigate(`/${newValue}`);
-      }
+      setTabValue(newValue);
     },
-    [filters, navigate],
+    [],
   );
 
   return (
@@ -43,10 +37,10 @@ const HomePage = ({ activeTab }: { activeTab: TabsType }) => {
           >
             Find Your Perfect Pup!
           </Typography>
-          <TabContext value={activeTab}>
+          <TabContext value={tabValue}>
             <Box>
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Tabs value={activeTab} onChange={handleChangeTab}>
+                <Tabs value={tabValue} onChange={handleChangeTab}>
                   <Tab
                     label={
                       <Typography

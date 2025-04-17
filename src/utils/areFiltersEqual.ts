@@ -1,6 +1,7 @@
 import { DogFilters } from "../types";
 
-export const breedsEqual = (urlFilters: DogFilters, contextFilters: DogFilters) => {
+// No longer used, but left as an example for project structure
+export const areBreedsEqual = (urlFilters: DogFilters, contextFilters: DogFilters) => {
   if (!urlFilters.breeds && !contextFilters.breeds) return true;
   if (!urlFilters.breeds || !contextFilters.breeds) return false;
   if (urlFilters.breeds.length !== contextFilters.breeds.length) return false;
@@ -12,15 +13,15 @@ export const breedsEqual = (urlFilters: DogFilters, contextFilters: DogFilters) 
 };
 
 export const areFiltersEqual = (urlFilters: DogFilters, contextFilters: DogFilters) => {
-  const primitivesDiffer = (property: keyof DogFilters) => {
-    return urlFilters[property] !== contextFilters[property];
+  const arePrimitivesEqual = (property: keyof DogFilters) => {
+    return urlFilters[property] === contextFilters[property];
   };
 
   return (
-    !breedsEqual(urlFilters, contextFilters) ||
-    primitivesDiffer('ageMin') ||
-    primitivesDiffer('ageMax') ||
-    primitivesDiffer('sort') ||
-    primitivesDiffer('page')
+    areBreedsEqual(urlFilters, contextFilters) &&
+    arePrimitivesEqual('ageMin') &&
+    arePrimitivesEqual('ageMax') &&
+    arePrimitivesEqual('sort') &&
+    arePrimitivesEqual('page')
   );
 };

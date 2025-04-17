@@ -1,16 +1,15 @@
 import React, { useCallback, useMemo } from 'react';
 import { Box, Chip } from '@mui/material';
 import { useDogsContext } from '../context/DogsContext';
-import { useNavigate } from 'react-router-dom';
 
 const FilterChips = () => {
-  const navigate = useNavigate();
   const {
     filters,
     handleSetCity,
     handleSetState,
     locationCity,
     locationState,
+    setFilters,
   } = useDogsContext();
 
   const ageFilter = useMemo(() => {
@@ -24,42 +23,31 @@ const FilterChips = () => {
 
   const handleDeleteBreed = useCallback(
     (deleteOption: string) => {
-      const filteredBreeds = filters.breeds.filter(
-        (breed) => breed !== deleteOption,
-      );
-      const searchParamsString = encodeURIComponent(
-        JSON.stringify({
-          ...filters,
-          breeds: filteredBreeds,
-        }),
-      );
-      navigate(`/search/${searchParamsString}`);
+      setFilters({
+        ...filters,
+        breeds: filters.breeds.filter((breed) => breed !== deleteOption),
+      });
     },
-    [filters, navigate],
+
+    [filters, setFilters],
   );
 
   const handleDeleteAge = useCallback(() => {
-    const searchParamsString = encodeURIComponent(
-      JSON.stringify({
-        ...filters,
-        ageMax: undefined,
-        ageMin: undefined,
-      }),
-    );
-    navigate(`/search/${searchParamsString}`);
-  }, [filters, navigate]);
+    setFilters({
+      ...filters,
+      ageMax: undefined,
+      ageMin: undefined,
+    });
+  }, [filters, setFilters]);
 
   const handleDeleteLocation = useCallback(() => {
     handleSetCity('');
     handleSetState('');
-    const searchParamsString = encodeURIComponent(
-      JSON.stringify({
-        ...filters,
-        zipCodes: [],
-      }),
-    );
-    navigate(`/search/${searchParamsString}`);
-  }, [filters, handleSetCity, handleSetState, navigate]);
+    setFilters({
+      ...filters,
+      zipCodes: [],
+    });
+  }, [filters, handleSetCity, handleSetState, setFilters]);
 
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
