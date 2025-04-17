@@ -2,7 +2,7 @@
 
 ## Live Demo
 
-[View Live Demo](https://thejakub-fetchchallenge.jmuhle-gc.workers.dev/login)
+[View Live Demo](https://thejakub-fetchchallenge.jmuhle-gc.workers.dev)
 
 ## Project Overview
 
