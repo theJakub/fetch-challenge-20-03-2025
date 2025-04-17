@@ -1,5 +1,9 @@
 # Fetch Frontend Take-Home Exercise
 
+## Live Demo
+
+[View Live Demo](https://thejakub-fetchchallenge.jmuhle-gc.workers.dev/login)
+
 ## Project Overview
 
 While I'm primarily an engineer rather than a designer, I have a solid understanding of UI/UX fundamentals and have collaborated with talented designers throughout my career to create intuitive user experiences.
