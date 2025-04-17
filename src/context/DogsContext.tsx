@@ -23,8 +23,11 @@ interface DogsContextType {
   clearFilters: () => void;
   dogs: Dog[];
   error: Error | null;
+  favoriteDogs: Record<string, Dog>;
   filters: DogFilters;
+  handleAddFavoriteDog: (dog: Dog) => void;
   handleChangePage: (event: unknown, newPage: number) => void;
+  handleRemoveFavoriteDog: (dogId: string) => void;
   handleSetCity: (locationCity: string) => void;
   handleSetState: (locationState: string) => void;
   isError: boolean;
@@ -56,6 +59,7 @@ export const DogsProvider = ({ children }: DogsProviderProps) => {
   const [currentPageUrl, setCurrentPageUrl] = useState<string | null>(null);
   const [locationCity, setLocationCity] = useState('');
   const [locationState, setLocationState] = useState('');
+  const [favoriteDogs, setFavoriteDogs] = useState<{ [key: string]: Dog }>({});
 
   const navigate = useNavigate();
   const breedsQuery = useBreeds();
@@ -100,6 +104,18 @@ export const DogsProvider = ({ children }: DogsProviderProps) => {
 
   const handleSetState = useCallback((newState: string) => {
     setLocationState(newState);
+  }, []);
+
+  const handleAddFavoriteDog = useCallback((dog: Dog) => {
+    setFavoriteDogs((prev) => ({ ...prev, [dog.id]: dog }));
+  }, []);
+
+  const handleRemoveFavoriteDog = useCallback((dogId: string) => {
+    setFavoriteDogs((prev) => {
+      const newFavoriteDogs = { ...prev };
+      delete newFavoriteDogs[dogId];
+      return newFavoriteDogs;
+    });
   }, []);
 
   useEffect(() => {
@@ -160,9 +176,21 @@ export const DogsProvider = ({ children }: DogsProviderProps) => {
   useEffect(() => {
     if (isError) {
       localStorage.removeItem('user');
+      localStorage.removeItem('favoriteDogs');
       navigate('/login');
     }
   }, [isError, navigate]);
+
+  useEffect(() => {
+    localStorage.setItem('favoriteDogs', JSON.stringify(favoriteDogs));
+  }, [favoriteDogs]);
+
+  useEffect(() => {
+    const favoriteDogs = localStorage.getItem('favoriteDogs');
+    if (favoriteDogs) {
+      setFavoriteDogs(JSON.parse(favoriteDogs));
+    }
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -170,8 +198,11 @@ export const DogsProvider = ({ children }: DogsProviderProps) => {
       clearFilters,
       dogs: dogsQuery.dogs || [],
       error,
+      favoriteDogs,
       filters,
+      handleAddFavoriteDog,
       handleChangePage,
+      handleRemoveFavoriteDog,
       handleSetCity,
       handleSetState,
       isError,
@@ -188,8 +219,11 @@ export const DogsProvider = ({ children }: DogsProviderProps) => {
       dogsQuery.dogs,
       dogsQuery.total,
       error,
+      favoriteDogs,
       filters,
+      handleAddFavoriteDog,
       handleChangePage,
+      handleRemoveFavoriteDog,
       handleSetCity,
       handleSetState,
       isError,

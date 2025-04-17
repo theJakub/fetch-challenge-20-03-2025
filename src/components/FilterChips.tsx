@@ -16,7 +16,10 @@ const FilterChips = () => {
   );
 
   const ageFilter = useMemo(() => {
-    if (filters.ageMax !== 20 || filters.ageMin !== 0) {
+    if (
+      (filters.ageMax && filters.ageMax !== 20) ||
+      (filters.ageMin && filters.ageMin !== 0)
+    ) {
       return `${filters.ageMin} - ${filters.ageMax}`;
     }
   }, [filters]);
@@ -36,7 +39,9 @@ const FilterChips = () => {
       {ageFilter && (
         <Chip
           label={ageFilter}
-          onDelete={() => setFilters({ ...filters, ageMax: 20, ageMin: 0 })}
+          onDelete={() =>
+            setFilters({ ...filters, ageMax: undefined, ageMin: undefined })
+          }
           color="primary"
           variant="outlined"
           size="medium"

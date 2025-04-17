@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { fetchWithAuth } from './api';
 import { useMemo } from 'react';
 
@@ -63,3 +63,19 @@ export function useDogSearch(currentUrl: string | null, isEnabled: boolean) {
     total: searchData?.total ?? 0,
   };
 }
+
+export const fetchMatch = async (dogIds: string[]) => {
+  const res = await fetchWithAuth('/dogs/match', {
+    method: 'POST',
+    body: JSON.stringify(dogIds),
+  });
+  return res;
+};
+
+export const useMatchDog = () => {
+  return useMutation({
+    mutationFn: async (dogIds: string[]) => {
+      return await fetchMatch(dogIds);
+    },
+  });
+};
