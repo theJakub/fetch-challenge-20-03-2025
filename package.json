@@ -33,5 +33,6 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.4.0"
-  }
+  },
+  "packageManager": "yarn@4.5.0"
 }
